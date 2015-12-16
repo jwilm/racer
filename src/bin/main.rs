@@ -27,7 +27,7 @@ use std::path::{Path, PathBuf};
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 #[cfg(not(test))]
-fn match_with_snippet_fn(m: Match, session: core::SessionRef) {
+fn match_with_snippet_fn(m: Match, session: &core::Session) {
     let (linenum, charnum) = scopes::point_to_coords_from_file(&m.filepath, m.point, session).unwrap();
     if m.matchstr == "" {
         panic!("MATCHSTR is empty - waddup?");
@@ -45,7 +45,7 @@ fn match_with_snippet_fn(m: Match, session: core::SessionRef) {
 }
 
 #[cfg(not(test))]
-fn match_fn(m: Match, session: core::SessionRef) {
+fn match_fn(m: Match, session: &core::Session) {
     if let Some((linenum, charnum)) = scopes::point_to_coords_from_file(&m.filepath,
                                                                         m.point,
                                                                         session) {
