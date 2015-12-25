@@ -153,7 +153,7 @@ fn external_complete(cfg: Config) {
     let cache = core::FileCache::new();
     let session = core::Session::from_path(&cache, &cwd, &cwd);
 
-    for m in do_file_search(p[0], &Path::new(".")) {
+    for m in do_file_search(p[0], &Path::new("."), &session) {
         if p.len() == 1 {
             match_fn(m, &session, cfg.interface);
         } else {

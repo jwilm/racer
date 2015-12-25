@@ -19,11 +19,11 @@ pub fn match_types(src: Src, blobstart: usize, blobend: usize,
                    search_type: SearchType,
                    local: bool, session: &Session) -> iter::Chain<MChain<MChain<MChain<MChain<MChain<MIter>>>>>, vec::IntoIter<Match>> {
     let it = match_extern_crate(&src, blobstart, blobend, searchstr, filepath, search_type, session).into_iter();
-    let it = it.chain(match_mod(src, blobstart, blobend, searchstr, filepath, search_type, local).into_iter());
-    let it = it.chain(match_struct(&src, blobstart, blobend, searchstr, filepath, search_type, local).into_iter());
-    let it = it.chain(match_type(&src, blobstart, blobend, searchstr, filepath, search_type, local).into_iter());
-    let it = it.chain(match_trait(&src, blobstart, blobend, searchstr, filepath, search_type, local).into_iter());
-    let it = it.chain(match_enum(&src, blobstart, blobend, searchstr, filepath, search_type, local).into_iter());
+    let it = it.chain(match_mod(src, blobstart, blobend, searchstr, filepath, search_type, local, session).into_iter());
+    let it = it.chain(match_struct(&src, blobstart, blobend, searchstr, filepath, search_type, local, session).into_iter());
+    let it = it.chain(match_type(&src, blobstart, blobend, searchstr, filepath, search_type, local, session).into_iter());
+    let it = it.chain(match_trait(&src, blobstart, blobend, searchstr, filepath, search_type, local, session).into_iter());
+    let it = it.chain(match_enum(&src, blobstart, blobend, searchstr, filepath, search_type, local, session).into_iter());
     it.chain(match_use(&src, blobstart, blobend, searchstr, filepath, search_type, local, session).into_iter())
 }
 
@@ -253,7 +253,7 @@ pub fn match_extern_crate(msrc: &str, blobstart: usize, blobend: usize,
                 } else {
                     name
                 };
-            get_crate_file(&realname, filepath).map(|cratepath| {
+            get_crate_file(&realname, filepath, session).map(|cratepath| {
                 res = Some(Match { matchstr: name.clone(),
                                   filepath: cratepath.to_path_buf(),
                                   point: 0,
@@ -271,7 +271,7 @@ pub fn match_extern_crate(msrc: &str, blobstart: usize, blobend: usize,
 
 pub fn match_mod(msrc: Src, blobstart: usize, blobend: usize,
                  searchstr: &str, filepath: &Path, search_type: SearchType,
-                 local: bool) -> Option<Match> {
+                 local: bool, session: &Session) -> Option<Match> {
     let blob = &msrc[blobstart..blobend];
     if let Some(start) = find_keyword(blob, "mod", searchstr, search_type, local) {
         debug!("found a module: |{}|", blob);
@@ -303,7 +303,7 @@ pub fn match_mod(msrc: Src, blobstart: usize, blobend: usize,
             for s in internalpath {
                 searchdir.push(&s);
             }
-            if let Some(modpath) = get_module_file(l, &searchdir) {
+            if let Some(modpath) = get_module_file(l, &searchdir, session) {
                 return Some(Match {
                     matchstr: l.to_owned(),
                     filepath: modpath.to_path_buf(),
@@ -322,7 +322,7 @@ pub fn match_mod(msrc: Src, blobstart: usize, blobend: usize,
 
 pub fn match_struct(msrc: &str, blobstart: usize, blobend: usize,
                     searchstr: &str, filepath: &Path, search_type: SearchType,
-                    local: bool) -> Option<Match> {
+                    local: bool, _: &Session) -> Option<Match> {
     let blob = &msrc[blobstart..blobend];
     if let Some(start) = find_keyword(blob, "struct", searchstr, search_type, local) {
         let l = match search_type {
@@ -360,7 +360,7 @@ pub fn match_struct(msrc: &str, blobstart: usize, blobend: usize,
 
 pub fn match_type(msrc: &str, blobstart: usize, blobend: usize,
                   searchstr: &str, filepath: &Path, search_type: SearchType,
-                  local: bool) -> Option<Match> {
+                  local: bool, _: &Session) -> Option<Match> {
     let blob = &msrc[blobstart..blobend];
     if let Some(start) = find_keyword(blob, "type", searchstr, search_type, local) {
         let l = match search_type {
@@ -385,7 +385,7 @@ pub fn match_type(msrc: &str, blobstart: usize, blobend: usize,
 
 pub fn match_trait(msrc: &str, blobstart: usize, blobend: usize,
                    searchstr: &str, filepath: &Path, search_type: SearchType,
-                   local: bool) -> Option<Match> {
+                   local: bool, _: &Session) -> Option<Match> {
     let blob = &msrc[blobstart..blobend];
     if let Some(start) = find_keyword(blob, "trait", searchstr, search_type, local) {
         let l = match search_type {
@@ -440,7 +440,7 @@ pub fn match_enum_variants(msrc: &str, blobstart: usize, blobend: usize,
 
 pub fn match_enum(msrc: &str, blobstart: usize, blobend: usize,
                   searchstr: &str, filepath: &Path, search_type: SearchType,
-                  local: bool) -> Option<Match> {
+                  local: bool, _: &Session) -> Option<Match> {
     let blob = &msrc[blobstart..blobend];
     if let Some(start) = find_keyword(blob, "enum", searchstr, search_type, local) {
         let l = match search_type {

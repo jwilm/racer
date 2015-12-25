@@ -384,6 +384,11 @@ impl<'c> FileCache<'c> {
         self.allocations_available.borrow().len() == 0
     }
 
+    /// Check if file is in cache
+    pub fn has_cached(&self, path: &path::Path) -> bool {
+        self.raw_map.borrow().contains_key(path)
+    }
+
     /// Allocate an IndexedSource using provided value.
     ///
     /// Attempts to reuse a freed allocation before allocating from arena.
@@ -547,6 +552,11 @@ impl<'c> Session<'c> {
 
     pub fn load_file_and_mask_comments(&self, filepath: &path::Path) -> Src<'c> {
         self.cache.load_file_and_mask_comments(filepath)
+    }
+
+    /// Check if file is in cache
+    pub fn has_cached(&self, path: &path::Path) -> bool {
+        self.cache.has_cached(path)
     }
 }
 
