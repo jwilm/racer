@@ -524,16 +524,15 @@ pub fn get_crate_file(kratename: &str, from_path: &Path) -> Option<PathBuf> {
         let mut lockfile = tomlfile.clone();
         lockfile.pop();
         lockfile.push("Cargo.lock");
-        if lockfile.exists() {
-            if let Some(f) = find_src_via_lockfile(kratename, &lockfile) {
-                return Some(f);
-            }
+        if let Some(pb) = find_src_via_tomlfile(kratename, &tomlfile) {
+            Some(pb)
+        } else if lockfile.exists() {
+            find_src_via_lockfile(kratename, &lockfile)
         } else {
             trace!("did not find lock file at {:?}", lockfile);
+            None
         }
-
-        // oh, no luck with the lockfile. Try the tomlfile
-        return find_src_via_tomlfile(kratename, &tomlfile)
+    } else {
+        None
     }
-    None
 }
